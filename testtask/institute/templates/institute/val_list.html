@@ -1,0 +1,8 @@
+
+<h2>Values</h2>
+<a href="{% url 'institute:val-add'%}"> Add new value</a>
+<ul>
+    {% for value in object_list %}
+        <li><a href="{% url 'institute:val-update' value.id %}"> {{ value }}</a></li>
+    {% endfor %}
+</ul>
