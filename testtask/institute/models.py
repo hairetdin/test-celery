@@ -8,6 +8,8 @@ from django.urls import reverse
 class Val(models.Model):
     first = models.IntegerField()
     second = models.IntegerField()
+    result = models.IntegerField(null=True)
+    exception = models.NullBooleanField(null=True)
 
     def __str__(self):
         return '{}, {}'.format(self.first, self.second)

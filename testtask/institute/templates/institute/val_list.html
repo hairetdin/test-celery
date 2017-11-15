@@ -1,8 +1,20 @@
 
 <h2>Values</h2>
 <a href="{% url 'institute:val-add'%}"> Add new value</a>
-<ul>
+<table border="1">
+    <tr>
+        <th>Value</th>
+        <th>Result</th>
+        <th>Exception</th>
+        <th></th>
+    </tr>
     {% for value in object_list %}
-        <li><a href="{% url 'institute:val-update' value.id %}"> {{ value }}</a></li>
+      <tr>
+        <td><a href="{% url 'institute:val-update' value.id %}"> {{ value }}</a></td>
+        <td><a href="{% url 'institute:val-update' value.id %}"> {{ value.result }}</a></td>
+        <td><a href="{% url 'institute:val-update' value.id %}"> {{ value.exception }}</a></td>
+        <td><a href="{% url 'institute:val-delete' value.id %}"> Delete</a></td>
+        <td><a href="{% url 'institute:calculate' value.id %}"> Calculate</a></td>
+      </tr>
     {% endfor %}
-</ul>
+</table>
