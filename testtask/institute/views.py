@@ -1,19 +1,26 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import sys
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.contrib import messages
+
+import json
+from django.core import serializers
 
 from .models import Val
-from .tasks import import_value
+from .tasks import chain_calc
 
 
 def calculate(request, pk=None):
-    import ipdb; ipdb.set_trace()
-    import_value.delay(pk)
+    #import ipdb; ipdb.set_trace()
+    chain_calc(pk)
+
+    messages.success(request, 'Result is calculating! Wait a moment and refresh this page. ')
     return HttpResponseRedirect(reverse_lazy('institute:val-list'))
 
 

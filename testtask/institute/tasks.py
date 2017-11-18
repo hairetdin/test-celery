@@ -1,15 +1,21 @@
-from celery import shared_task
+from celery import shared_task, chain
+import sys
 import json
 from django.core import serializers
 from .models import Val
+
+
+def chain_calc(pk=None):
+    chain = import_value.s(pk) | calc_value.s() | save_value.s()
+    chain()
+
 
 
 @shared_task
 def import_value(pk=None):
     data = None
     object_pk = int(pk)
-    if data and pk:
-        #data = serializers.serialize('json', Val.objects.filter(pk=object_pk), fields=('first','second'))
+    if pk:
         data = serializers.serialize('json', Val.objects.filter(pk=object_pk))
     return data
 
@@ -25,6 +31,6 @@ def calc_value(data=None):
 @shared_task
 def save_value(data=None):
     if data:
-        for deserialized_object in serializers.deserialize("json", data):
+        for deserialized_object in serializers.deserialize("json", json.dumps(data)):
             obj = deserialized_object.save()
-    return obj
+    return 'obj: {}'.format(obj)
