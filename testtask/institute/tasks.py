@@ -1,3 +1,4 @@
+import celery
 from celery import shared_task, chain
 import sys
 import json
@@ -5,13 +6,29 @@ from django.core import serializers
 from .models import Val
 
 
-def chain_calc(pk=None):
-    chain = import_value.s(pk) | calc_value.s() | save_value.s()
-    chain()
+class TaskTracker(celery.Task):
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        val = Val.objects.get(pk=kwargs['pk'])
+        if not val.exception:
+            val.exception = True
+            val.save()
+        print('{0!r} failed: {1!r}'.format(task_id, exc))
+
+    def after_return(self, status, retval, task_id, args, kwargs, einfo):
+        val = Val.objects.get(pk=kwargs['pk'])
+        val.exception = False
+        val.save()
+        print ('after_return status: {}; {}; {}'.format(status, args, kwargs))
 
 
+def chain_calc(pk):
+    chain = import_value.s(pk=pk) | calc_value.s(pk=pk) | save_value.s(pk=pk)
+    res = chain()
+    return res
 
-@shared_task
+
+@shared_task(base=TaskTracker)
 def import_value(pk=None):
     data = None
     object_pk = int(pk)
@@ -19,8 +36,8 @@ def import_value(pk=None):
         data = serializers.serialize('json', Val.objects.filter(pk=object_pk))
     return data
 
-@shared_task
-def calc_value(data=None):
+@shared_task(base=TaskTracker)
+def calc_value(data, pk=None):
     result = None
     if data:
         d = json.loads(data)
@@ -28,9 +45,9 @@ def calc_value(data=None):
         d[0]['fields']['result'] = result
     return d
 
-@shared_task
-def save_value(data=None):
+@shared_task(base=TaskTracker)
+def save_value(data, pk=None):
     if data:
         for deserialized_object in serializers.deserialize("json", json.dumps(data)):
-            obj = deserialized_object.save()
-    return 'obj: {}'.format(obj)
+            deserialized_object.save()
+    return 'result = {}'.format(deserialized_object.object.result)

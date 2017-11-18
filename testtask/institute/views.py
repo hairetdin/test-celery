@@ -18,9 +18,9 @@ from .tasks import chain_calc
 
 def calculate(request, pk=None):
     #import ipdb; ipdb.set_trace()
-    chain_calc(pk)
+    chain = chain_calc(pk)
 
-    messages.success(request, 'Result is calculating! Wait a moment and refresh this page. ')
+    messages.success(request, 'Result is calculating! Wait a moment and refresh this page. chain={}'.format(chain))
     return HttpResponseRedirect(reverse_lazy('institute:val-list'))
 
 
