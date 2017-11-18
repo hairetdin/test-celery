@@ -8,6 +8,11 @@ app = Celery('testtask')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
+app.conf.task_routes = {
+    'institute.tasks.import_value': {'queue': 'import_value'},
+    'institute.tasks.calc_value': {'queue': 'calc_value'},
+    'institute.tasks.save_value': {'queue': 'save_value'},
+}
 
 @app.task(bind=True)
 def debug_task(self):
